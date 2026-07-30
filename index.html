@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>John.D's Global renewable news — Global Renewable Energy Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="description" content="John.D's Global renewable news — India and international capacity snapshots, state/country lookups, and live renewable energy headlines (updated Jul 2026).">
+<style>
+:root{
+  --bg:#0a0d12;
+  --bg-panel:#10151d;
+  --bg-panel2:#141b25;
+  --line:#212a36;
+  --text:#e8edf4;
+  --text-dim:#8695a7;
+  --text-faint:#5f6e81; /* slightly stronger for accessibility */
+  --solar:#ffb703;
+  --wind:#2dd4d4;
+  --hydro:#4d8dff;
+  --hydrogen:#b98af0;
+  --bio:#7cc142;
+  --accent:#ffb703;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(255,183,3,0.07), transparent),
+    radial-gradient(ellipse 900px 600px at 100% 0%, rgba(45,212,212,0.06), transparent),
+    var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  padding-bottom:60px;
+}
+.mono{font-family:'JetBrains Mono',monospace;}
+.disp{font-family:'Space Grotesk',sans-serif;}
+
+/* focus styles for keyboard users */
+:focus { outline: none; }
+:focus-visible { outline: 3px solid rgba(255,183,3,0.18); outline-offset: 2px; border-radius:6px; }
+
+/* ===== Header / grid-line motif ===== */
+.topbar{
+  border-bottom:1px solid var(--line);
+  padding:22px 32px;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+  position:sticky; top:0; z-index:50;
+  background:rgba(10,13,18,0.88);
+  backdrop-filter:blur(10px);
+}
+.brand{display:flex; align-items:center; gap:12px;}
+.brand-mark{
+  width:34px; height:34px; border-radius:8px;
+  background:linear-gradient(135deg,var(--solar),var(--wind));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Grotesk'; font-weight:700; color:#0a0d12; font-size:16px;
+}
+.brand-name{font-family:'Space Grotesk'; font-weight:700; font-size:18px; letter-spacing:-0.02em;}
+.brand-tag{color:var(--text-faint); font-size:11.5px; margin-top:1px;}
+.livepill{
+  display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--text-dim);
+  border:1px solid var(--line); padding:6px 12px; border-radius:20px; font-family:'JetBrains Mono';
+}
+.dot{width:7px; height:7px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80; animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+
+/* ===== Region tabs ===== */
+.regiontabs{
+  display:flex; gap:8px; padding:20px 32px 0 32px; max-width:1400px; margin:0 auto;
+}
+.rtab{
+  font-family:'Space Grotesk'; font-weight:600; font-size:15px;
+  padding:11px 22px; border-radius:10px 10px 0 0; cursor:pointer;
+  color:var(--text-dim); border:1px solid transparent; border-bottom:none;
+  transition:all .15s;
+}
+.rtab.active{
+  color:var(--text); background:var(--bg-panel); border-color:var(--line);
+}
+.rtab:hover:not(.active){color:var(--text);}
+
+.container{max-width:1400px; margin:0 auto; padding:0 32px;}
+.panel-wrap{background:var(--bg-panel); border:1px solid var(--line); border-radius:0 12px 12px 12px; padding:28px; margin-top:0;}
+
+/* ===== KPI row ===== */
+.kpi-row{display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:26px;}
+.kpi{
+  background:var(--bg-panel2); border:1px solid var(--line); border-radius:12px; padding:18px 18px;
+  position:relative; overflow:hidden;
+}
+.kpi::before{content:''; position:absolute; top:0; left:0; width:100%; height:3px;}
+.kpi.c-total::before{background:linear-gradient(90deg,var(--solar),var(--wind),var(--hydro));}
+.kpi.c-solar::before{background:var(--solar);}
+.kpi.c-wind::before{background:var(--wind);}
+.kpi.c-hydro::before{background:var(--hydro);}
+.kpi.c-hydrogen::before{background:var(--hydrogen);}
+.kpi-label{font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;}
+.kpi-val{font-family:'Space Grotesk'; font-size:26px; font-weight:700; letter-spacing:-0.01em;}
+.kpi-sub{font-size:11.5px; color:var(--text-faint); margin-top:5px; font-family:'JetBrains Mono';}
+.kpi-sub.up{color:#4ade80;}
+
+/* ===== Section headers ===== */
+.sec-head{display:flex; align-items:baseline; justify-content:space-between; margin:34px 0 14px 0;}
+.sec-title{font-family:'Space Grotesk'; font-size:18px; font-weight:700; display:flex; align-items:center; gap:10px;}
+.sec-title .sw{width:10px; height:10px; border-radius:3px;}
+.sec-note{font-size:12px; color:var(--text-faint);}
+
+/* ===== Sector dashboard cards ===== */
+.sector-grid{display:grid; grid-template-columns:1.1fr 1fr; gap:16px;}
+.card{background:var(--bg-panel2); border:1px solid var(--line); border-radius:14px; padding:20px;}
+.card-title{font-family:'Space Grotesk'; font-weight:600; font-size:15px; margin-bottom:2px;}
+.card-desc{font-size:12px; color:var(--text-dim); margin-bottom:14px;}
+.chart-box{position:relative; min-height:210px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;}
+.donut-wrap{display:flex; align-items:center; gap:18px; flex-wrap:wrap; justify-content:center;}
+.legend{display:flex; flex-direction:column; gap:7px;}
+.legend-item{display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--text-dim);}
+.legend-sw{width:9px; height:9px; border-radius:3px; flex-shrink:0;}
+.legend-item .lv{color:var(--text); font-family:'JetBrains Mono'; margin-left:auto; padding-left:10px;}
+.donut-center-label{font-family:'Space Grotesk'; font-size:13px; font-weight:700; fill:var(--text);}
+.vbar-chart{display:flex; align-items:flex-end; gap:16px; width:100%; height:170px; padding:0 6px;}
+.vbar-col{display:flex; flex-direction:column; align-items:center; flex:1; height:100%; justify-content:flex-end;}
+.vbar-val{font-family:'JetBrains Mono'; font-size:11.5px; margin-bottom:6px; color:var(--text);}
+.vbar-fill{width:100%; max-width:52px; border-radius:6px 6px 0 0;}
+.vbar-label{font-size:11px; color:var(--text-dim); margin-top:8px; text-align:center;}
+.hbar-chart{display:flex; flex-direction:column; gap:16px; width:100%;}
+.hbar-row .hbar-top{display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;}
+.hbar-row .hbar-top .lbl{color:var(--text-dim);}
+.hbar-row .hbar-top .amt{font-family:'JetBrains Mono'; color:var(--text);}
+.hbar-track{background:var(--bg); border-radius:6px; height:16px; overflow:hidden;}
+.hbar-fg{height:100%; border-radius:6px;}
+.stat-list{display:flex; flex-direction:column; gap:10px; margin-top:6px;}
+.stat-row{display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:8px 0; border-bottom:1px solid var(--line);}
+.stat-row:last-child{border-bottom:none;}
+.stat-row .name{color:var(--text-dim);}
+.stat-row .val{font-family:'JetBrains Mono'; font-weight:500;}
+.source-tag{
+  display:inline-flex; align-items:center; gap:6px; margin-top:14px; font-size:11.5px;
+  color:var(--text-faint); border-top:1px dashed var(--line); padding-top:12px;
+}
+.source-tag a{color:var(--wind); text-decoration:none; font-weight:500;}
+.source-tag a:hover{text-decoration:underline;}
+
+/* ===== Region selector + table ===== */
+.region-select-row{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+select.regionsel{
+  background:var(--bg-panel); color:var(--text); border:1px solid var(--line);
+  padding:10px 14px; border-radius:9px; font-family:'Inter'; font-size:13.5px; cursor:pointer; min-width:220px;
+}
+.region-detail{
+  margin-top:16px; background:var(--bg-panel2); border:1px solid var(--line); border-radius:14px; padding:20px;
+  display:none;
+}
+.region-detail.show{display:block;}
+.rd-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:14px;}
+.rd-stat{background:var(--bg-panel); border:1px solid var(--line); border-radius:10px; padding:12px 14px;}
+.rd-stat .l{font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.05em;}
+.rd-stat .v{font-family:'JetBrains Mono'; font-size:17px; font-weight:600; margin-top:4px;}
+
+table.rank{width:100%; border-collapse:collapse; margin-top:6px;}
+table.rank th{text-align:left; font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.05em; padding:8px 10px; border-bottom:1px solid var(--line);}
+table.rank td{padding:9px 10px; font-size:13px; border-bottom:1px solid var(--line);}
+table.rank tr:last-child td{border-bottom:none;}
+table.rank td.num{font-family:'JetBrains Mono'; text-align:right;}
+.bar-bg{background:var(--bg); border-radius:4px; height:6px; width:100%; overflow:hidden; margin-top:4px;}
+.bar-fg{height:100%; border-radius:4px;}
+
+/* ===== News ===== */
+.news-tabs{display:flex; gap:8px; margin-bottom:16px;}
+.ntab{font-size:12.5px; padding:7px 14px; border-radius:8px; border:1px solid var(--line); color:var(--text-dim); cursor:pointer; font-weight:500;}
+.ntab.active{background:var(--bg); color:var(--text); border-color:var(--wind);}
+.news-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
+.news-src{background:var(--bg-panel2); border:1px solid var(--line); border-radius:14px; padding:16px 18px;}
+.news-src-head{display:flex; align-items:center; justify-content:between; margin-bottom:10px;}
+.news-src-name{font-family:'Space Grotesk'; font-weight:600; font-size:14px; display:flex; align-items:center; gap:8px;}
+.news-status{font-size:10.5px; color:var(--text-faint); font-family:'JetBrains Mono'; margin-left:auto;}
+.news-item{padding:9px 0; border-bottom:1px solid var(--line); font-size:13px; line-height:1.4;}
+.news-item:last-child{border-bottom:none;}
+.news-item a{color:var(--text); text-decoration:none;}
+.news-item a:hover{color:var(--wind);}
+.news-item .date{font-size:10.5px; color:var(--text-faint); font-family:'JetBrains Mono'; display:block; margin-top:3px;}
+.news-loading{color:var(--text-faint); font-size:12.5px; padding:10px 0;}
+.visit-link{display:inline-block; margin-top:10px; font-size:11.5px; color:var(--wind); text-decoration:none; font-weight:500;}
+.visit-link:hover{text-decoration:underline;}
+
+footer{max-width:1400px; margin:40px auto 0 auto; padding:20px 32px; color:var(--text-faint); font-size:11.5px; border-top:1px solid var(--line);}
+
+@media(max-width:1000px){
+  .kpi-row{grid-template-columns:repeat(2,1fr);}
+  .sector-grid{grid-template-columns:1fr;}
+  .news-grid{grid-template-columns:1fr;}
+  .rd-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar" role="banner">
+  <div class="brand">
+    <div class="brand-mark">TW</div>
+    <div>
+      <div class="brand-name">John.D's Global renewable news</div>
+      <div class="brand-tag">Global Renewable Energy Portal</div>
+    </div>
+  </div>
+  <div class="livepill"><span class="dot"></span> DATA SNAPSHOT: JUL 2026 · MNRE / IRENA / IEA</div>
+</div>
+
+<main>
+<div class="regiontabs" role="tablist" aria-label="Region selector">
+  <div class="rtab active" data-region="india" role="tab" aria-selected="true" tabindex="0">🇮🇳 India</div>
+  <div class="rtab" data-region="intl" role="tab" aria-selected="false" tabindex="-1">🌍 International</div>
+</div>
+
+<div class="container">
+<div class="panel-wrap">
+
+  <!-- ============ INDIA PANEL ============ -->
+  <div id="panel-india">
+
+    <div class="kpi-row">
+      <div class="kpi c-total">
+        <div class="kpi-label">Total RE Capacity</div>
+        <div class="kpi-val">288.58 GW</div>
+        <div class="kpi-sub up">▲ from 76.38 GW in 2014 · as of 30 Jun 2026</div>
+      </div>
+      <div class="kpi c-solar">
+        <div class="kpi-label">Solar (Total)</div>
+        <div class="kpi-val" style="color:var(--solar)">162.15 GW</div>
+        <div class="kpi-sub">56% of RE mix</div>
+      </div>
+      <div class="kpi c-wind">
+        <div class="kpi-label">Wind</div>
+        <div class="kpi-val" style="color:var(--wind)">57.44 GW</div>
+        <div class="kpi-sub">20% of RE mix</div>
+      </div>
+      <div class="kpi c-hydro">
+        <div class="kpi-label">Large Hydro</div>
+        <div class="kpi-val" style="color:var(--hydro)">57.24 GW</div>
+        <div class="kpi-sub">+ 5.18 GW small hydro</div>
+      </div>
+      <div class="kpi c-hydrogen">
+        <div class="kpi-label">Green H₂ Mission Outlay</div>
+        <div class="kpi-val" style="color:var(--hydrogen)">₹19,744 Cr</div>
+        <div class="kpi-sub">target: 5 MMT/yr by 2030</div>
+      </div>
+    </div>
+
+    <!-- SOLAR -->
+    <div class="sec-head">
+      <div class="sec-title"><span class="sw" style="background:var(--solar)"></span>Solar Power — Rooftop vs Ground-Mounted</div>
+      <div class="sec-note">MNRE state-wise capacity table, 31 May 2026</div>
+    </div>
+    <div class="sector-grid">
+      <div class="card">
+        <div class="card-title">Solar capacity mix</div>
+        <div class="card-desc">Total solar: 157.05 GW installed</div>
+        <div class="chart-box" id="chartSolarIndia"></div>
+        <div class="source-tag">Source: MNRE Physical Progress Report · <a href="https://mnre.gov.in/en/physical-progress/" target="_blank" rel="noopener">mnre.gov.in ↗</a></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Segment breakdown</div>
+        <div class="card-desc">As on 31.05.2026</div>
+        <div class="stat-list">
+          <div class="stat-row"><span class="name">Ground-mounted solar</span><span class="val" style="color:var(--solar)">118.79 GW</span></div>
+          <div class="stat-row"><span class="name">Rooftop (incl. PM Surya Ghar)</span><span class="val" style="color:var(--solar)">27.88 GW</span></div>
+          <div class="stat-row"><span class="name">Hybrid solar component</span><span class="val">4.06 GW</span></div>
+          <div class="stat-row"><span class="name">Off-grid / KUSUM Comp-B</span><span class="val">6.31 GW</span></div>
+          <div class="stat-row"><span class="name">FY26 rooftop additions</span><span class="val">+8.7 GW (▲69% YoY)</span></div>
+          <div class="stat-row"><span class="name">FY26 ground-mount additions</span><span class="val">+34.8 GW (▲106% YoY)</span></div>
+        </div>
+        <div class="source-tag">PM Surya Ghar scheme covers 26+ lakh households · Source: JMK Research · <a href="https://jmkresearch.com/india-installs-record-44-gw-solar-and-6-gw-wind-capacity-in-fy2026/" target="_blank" rel="noopener">jmkresearch.com ↗</a></div>
+      </div>
+    </div>
+
+    <!-- WIND -->
+    <div class="sec-head">
+      <div class="sec-title"><span class="sw" style="background:var(--wind)"></span>Wind Power</div>
+      <div class="sec-note">FY 2025–26 additions</div>
+    </div>
+    <div class="sector-grid">
+      <div class="card">
+        <div class="card-title">FY26 wind additions by state</div>
+        <div class="card-desc">6.05 GW added nationally (▲44–45% YoY)</div>
+        <div class="chart-box" id="chartWindIndia"></div>
+        <div class="source-tag">Source: MNRE / SolarQuarter · <a href="https://solarquarter.com/2026/04/07/mnre-india-achieves-record-6-05-gw-wind-capacity-addition-in-fy-2025-26-cumulative-capacity-crosses-56-gw/" target="_blank" rel="noopener">solarquarter.com ↗</a></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Wind capacity snapshot</div>
+        <div class="stat-list">
+          <div class="stat-row"><span class="name">Cumulative wind capacity</span><span class="val" style="color:var(--wind)">57.44 GW</span></div>
+          <div class="stat-row"><span class="name">Gujarat (FY26 additions)</span><span class="val">2,965 MW (49%)</span></div>
+          <div class="stat-row"><span class="name">Karnataka (FY26 additions)</span><span class="val">1,379 MW (23%)</span></div>
+          <div class="stat-row"><span class="name">Maharashtra (FY26 additions)</span><span class="val">643 MW (11%)</span></div>
+          <div class="stat-row"><span class="name">Previous year addition</span><span class="val">4.15 GW</span></div>
+        </div>
+        <div class="source-tag">Source: PIB / MNRE press briefing, Apr 2026 · <a href="https://www.pib.gov.in/PressReleasePage.aspx?PRID=2250039&lang=1&reg=3" target="_blank" rel="noopener">pib.gov.in ↗</a></div>
+      </div>
+    </div>
+
+    <!-- HYDRO -->
+    <div class="sec-head">
+      <div class="sec-title"><span class="sw" style="background:var(--hydro)"></span>Hydro Power — Large &amp; Small</div>
+    </div>
+    <div class="sector-grid">
+      <div class="card">
+        <div class="card-title">Hydro capacity split</div>
+        <div class="chart-box" id="chartHydroIndia"></div>
+        <div class="source-tag">Source: MNRE state-wise table, 31 May 2026 · <a href="https://mnre.gov.in/en/physical-progress/" target="_blank" rel="noopener">mnre.gov.in ↗</a></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Small Hydro Power Scheme (2026–31)</div>
+        <div class="card-desc">Cabinet-approved outlay for new SHP capacity</div>
+        <div class="stat-list">
+          <div class="stat-row"><span class="name">Large hydro (installed)</span><span class="val" style="color:var(--hydro)">51.96–57.24 GW</span></div>
+          <div class="stat-row"><span class="name">Small hydro (installed)</span><span class="val" style="color:var(--hydro)">5.18 GW</span></div>
+          <div class="stat-row"><span class="name">New SHP scheme outlay</span><span class="val">₹2,584.6 Cr</span></div>
+          <div class="stat-row"><span class="name">New SHP target capacity</span><span class="val">~1,500 MW</span></div>
+        </div>
+        <div class="source-tag">Focus: hilly &amp; North-Eastern states · Source: PIB · <a href="https://www.pib.gov.in/PressReleasePage.aspx?PRID=2250039&lang=1&reg=3" target="_blank" rel="noopener">pib.gov.in ↗</a></div>
+      </div>
+    </div>
+
+    <!-- HYDROGEN -->
+    <div class="sec-head">
+      <div class="sec-title"><span class="sw" style="background:var(--hydrogen)"></span>Green Hydrogen — National Green Hydrogen Mission</div>
+    </div>
+    <div class="sector-grid">
+      <div class="card">
+        <div class="card-title">Mission progress vs 2030 target</div>
+        <div class="chart-box" id="chartH2India"></div>
+        <div class="source-tag">Source: Rajya Sabha reply, MNRE, Mar 2026 · <a href="https://www.energetica-india.net/news/india-commissions-8000-tpa-green-hydrogen-capacity-till-feb-2026-aims-for-5-mmt-by-2030" target="_blank" rel="noopener">energetica-india.net ↗</a></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Key mission metrics</div>
+        <div class="stat-list">
+          <div class="stat-row"><span class="name">Commissioned capacity (Feb 2026)</span><span class="val" style="color:var(--hydrogen)">8,000 TPA</span></div>
+          <div class="stat-row"><span class="name">2030 production target</span><span class="val">5 MMT / year</span></div>
+          <div class="stat-row"><span class="name">Dedicated RE capacity target</span><span class="val">125 GW</span></div>
+          <div class="stat-row"><span class="name">Electrolyser mfg. awarded</span><span class="val">3,000 MW/yr (15 firms)</span></div>
+          <div class="stat-row"><span class="name">Green H₂ output allocated (SIGHT)</span><span class="val">8.62 lakh TPA</span></div>
+          <div class="stat-row"><span class="name">Reliance Jamnagar gigafactory</span><span class="val">3 GW/yr target, late 2026</span></div>
+        </div>
+        <div class="source-tag">Source: SolarQuarter / World Green Energy Expo · <a href="https://solarquarter.com/2026/03/25/green-hydrogen-india-push-government-advances-national-green-hydrogen-mission/" target="_blank" rel="noopener">solarquarter.com ↗</a></div>
+      </div>
+    </div>
+
+    <!-- STATE SELECTOR -->
+    <div class="sec-head">
+      <div class="sec-title">📍 State-wise Lookup</div>
+    </div>
+    <div class="region-select-row">
+      <select class="regionsel" id="stateSelect">
+        <option value="">Select a state…</option>
+      </select>
+      <span class="sec-note" id="stateSourceNote"></span>
+    </div>
+    <div class="region-detail" id="stateDetail"></div>
+
+    <div class="sec-head"><div class="sec-title">🏆 Top States — Overall RE Capacity Leaders</div></div>
+    <table class="rank" id="stateRankTable"></table>
+
+  </div>
+
+  <!-- ============ INTERNATIONAL PANEL ============ -->
+  <div id="panel-intl" style="display:none;">
+
+    <div class="kpi-row">
+      <div class="kpi c-total">
+        <div class="kpi-label">Global RE Capacity</div>
+        <div class="kpi-val">5,149 GW</div>
+        <div class="kpi-sub up">▲ +692 GW (+15.5%) in 2025</div>
+      </div>
+      <div class="kpi c-solar">
+        <div class="kpi-label">Solar</div>
+        <div class="kpi-val" style="color:var(--solar)">2,392 GW</div>
+        <div class="kpi-sub up">+511 GW added in 2025</div>
+      </div>
+      <div class="kpi c-wind">
+        <div class="kpi-label">Wind</div>
+        <div class="kpi-val" style="color:var(--wind)">1,291 GW</div>
+        <div class="kpi-sub up">+159 GW added in 2025</div>
+      </div>
+      <div class="kpi c-hydro">
+        <div class="kpi-label">Hydropower</div>
+        <div class="kpi-val" style="color:var(--hydro)">1,296 GW</div>
+        <div class="kpi-sub">+ 160 GW pure pumped-storage</div>
+      </div>
+      <div class="kpi c-hydrogen">
+        <div class="kpi-label">Clean H₂ Project Pipeline</div>
+        <div class="kpi-val" style="color:var(--hydrogen)">1,500+</div>
+        <div class="kpi-sub">projects announced globally</div>
+      </div>
+    </div>
+
+    <div class="sec-head">
+      <div class="sec-title"><span class="sw" style="background:linear-gradient(90deg,var(--solar),var(--wind))"></span>Global Capacity Mix, End of 2025</div>
+      <div class="sec-note">Source: IRENA Renewable Capacity Statistics 2026</div>
+    </div>
+    <div class="sector-grid">
+      <div class="card">
+        <div class="card-title">Capacity by technology</div>
+        <div class="chart-box" id="chartGlobalMix"></div>
+        <div class="source-tag">Source: IRENA, 31 Mar 2026 · <a href="https://www.irena.org/News/pressreleases/2026/Apr/Near-700-GW-Surge-in-2025-Proves-Renewable-Energy-Resilience" target="_blank" rel="noopener">irena.org ↗</a></div>
+      </div>
+      <div class="card">
+        <div class="card-title">2025 additions by technology</div>
+        <div class="stat-list">
+          <div class="stat-row"><span class="name">Solar PV</span><span class="val" style="color:var(--solar)">+511.2 GW (+27.2%)</span></div>
+          <div class="stat-row"><span class="name">Wind (incl. 7.1% offshore)</span><span class="val" style="color:var(--wind)">+158.7 GW (+14.0%)</span></div>
+          <div class="stat-row"><span class="name">Hydropower</span><span class="val" style="color:var(--hydro)">+18.4 GW (+1.4%, 96% from China)</span></div>
+          <div class="stat-row"><span class="name">Bioenergy</span><span class="val">+3.4 GW (+2.3%)</span></div>
+          <div class="stat-row"><span class="name">Geothermal</span><span class="val">+0.3 GW (+1.7%)</span></div>
+          <div class="stat-row"><span class="name">Renewables' share of global power capacity</span><span class="val">49.4% (▲ from 46.3%)</span></div>
+        </div>
+        <div class="source-tag">Asia added 74.2% of all new capacity in 2025 · Source: IRENA</div>
+      </div>
+    </div>
+
+    <div class="sec-head"><div class="sec-title">🌐 Country / Region Lookup</div></div>
+    <div class="region-select-row">
+      <select class="regionsel" id="countrySelect">
+        <option value="">Select a country…</option>
+      </select>
+      <span class="sec-note" id="countrySourceNote"></span>
+    </div>
+    <div class="region-detail" id="countryDetail"></div>
+
+    <div class="sec-head"><div class="sec-title">🏆 Top 10 Countries — Total RE Capacity</div></div>
+    <table class="rank" id="countryRankTable"></table>
+    <div class="source-tag" style="margin-top:10px;">Source: Statista, Mar 2026 (via The Star) · <a href="https://www.the-star.co.ke/news/infographics/2026-07-09-leading-countries-in-installed-renewable-energy-capacity-worldwide" target="_blank" rel="noopener">the-star.co.ke ↗</a></div>
+
+  </div>
+
+  <!-- ============ NEWS (shared, filtered by region tab) ============ -->
+  <div class="sec-head"><div class="sec-title">📰 Live Renewable Energy News</div></div>
+  <div class="news-tabs" role="tablist" aria-label="News region selector">
+    <div class="ntab active" data-newsregion="india" role="tab" aria-selected="true" tabindex="0">India Sources</div>
+    <div class="ntab" data-newsregion="intl" role="tab" aria-selected="false" tabindex="-1">International Sources</div>
+  </div>
+  <div class="news-grid" id="newsGridIndia"></div>
+  <div class="news-grid" id="newsGridIntl" style="display:none;"></div>
+
+</div>
+</div>
+
+</main>
+
+<footer>
+  Terawatt Portal — data compiled from MNRE, IRENA, IEA, PIB, JMK Research, SolarQuarter and other sources cited on each card. Figures reflect the latest publicly reported snapshot as of July 2026 and update whenever official sources revise them; click through to each source for the live official record. News panels pull live headlines client-side from public RSS feeds — if a feed doesn't load, use the "visit site" link.
+</footer>
+
+<script>
+// ============ Helpers & charts (unchanged core behavior) ============
+function fmtNum(n){ return n>=1000 ? n.toLocaleString('en-US',{maximumFractionDigits:0}) : n; }
+
+function drawDonut(containerId, labels, values, colors, unit){
+  const size=170, r=62, cx=size/2, cy=size/2, circumference=2*Math.PI*r;
+  const total = values.reduce((a,b)=>a+b,0);
+  let offset=0;
+  let segs='';
+  values.forEach((v,i)=>{
+    const frac = v/total;
+    const len = frac*circumference;
+    segs += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${colors[i]}" stroke-width="26"
+      stroke-dasharray="${len} ${circumference-len}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += len;
+  });
+  const svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      ${segs}
+      <text x="${cx}" y="${cy-2}" text-anchor="middle" class="donut-center-label">${fmtNum(total)}</text>
+      <text x="${cx}" y="${cy+14}" text-anchor="middle" style="font-size:9.5px; fill:#8695a7;">${unit}</text>
+    </svg>`;
+  const legend = `<div class="legend">${labels.map((l,i)=>`
+      <div class="legend-item"><span class="legend-sw" style="background:${colors[i]}"></span>${l}<span class="lv">${values[i]}</span></div>
+    `).join('')}</div>`;
+  document.getElementById(containerId).innerHTML = `<div class="donut-wrap">${svg}${legend}</div>`;
+}
+
+function drawVBars(containerId, labels, values, colors, unit){
+  const max = Math.max(...values);
+  const bars = labels.map((l,i)=>{
+    const h = Math.max(6,(values[i]/max*100));
+    return `<div class="vbar-col">
+        <div class="vbar-val">${fmtNum(values[i])}${unit?' '+unit:''}</div>
+        <div class="vbar-fill" style="height:${h}%; background:${colors[i]};"></div>
+        <div class="vbar-label">${l}</div>
+      </div>`;
+  }).join('');
+  document.getElementById(containerId).innerHTML = `<div class="vbar-chart">${bars}</div>`;
+}
+
+function drawHBars(containerId, labels, values, colors, unitFn){
+  const scaled = values.map(v=>Math.sqrt(v));
+  const max = Math.max(...scaled);
+  const rows = labels.map((l,i)=>{
+    const w = Math.max(4,(scaled[i]/max*100));
+    return `<div class="hbar-row">
+        <div class="hbar-top"><span class="lbl">${l}</span><span class="amt">${unitFn(values[i])}</span></div>
+        <div class="hbar-track"><div class="hbar-fg" style="width:${w}%; background:${colors[i]};"></div></div>
+      </div>`;
+  }).join('');
+  document.getElementById(containerId).innerHTML = `<div class="hbar-chart">${rows}</div>`;
+}
+
+// initial charts
+drawDonut('chartSolarIndia',
+  ['Ground-mounted','Rooftop (PM Surya Ghar)','Hybrid solar','Off-grid/KUSUM'],
+  [118.79,27.88,4.06,6.31],
+  ['#ffb703','#ffd166','#e08a00','#8a5a00'], 'GW');
+
+drawVBars('chartWindIndia',
+  ['Gujarat','Karnataka','Maharashtra','Others'],
+  [2965,1379,643,1013],
+  ['#2dd4d4','#2dd4d4','#2dd4d4','#4a6e6e'], 'MW');
+
+drawDonut('chartHydroIndia',
+  ['Large Hydro','Small Hydro'],
+  [57.24,5.18],
+  ['#4d8dff','#9fc0ff'], 'GW');
+
+drawHBars('chartH2India',
+  ['Commissioned (Feb 2026)','2030 Target'],
+  [8,5000],
+  ['#b98af0','#5b3d85'],
+  (v)=>fmtNum(v)+'k TPA');
+
+drawDonut('chartGlobalMix',
+  ['Solar','Hydropower','Wind','Bioenergy','Geothermal'],
+  [2392,1296,1291,154,16],
+  ['#ffb703','#4d8dff','#2dd4d4','#7cc142','#b98af0'], 'GW');
+
+// ============ STATE DATA (India) ============
+const stateData = {
+  "Rajasthan":{total:null, solar:41.7, wind:null, note:"India's largest solar state"},
+  "Gujarat":{total:49.1, solar:32.30, wind:null, note:"Overall RE capacity leader; #1 in FY26 wind additions (2,965 MW)"},
+  "Maharashtra":{total:null, solar:20.28, wind:0.643, note:"3rd largest solar state; strong FY26 wind additions"},
+  "Tamil Nadu":{total:null, solar:13.91, wind:null, note:"Long-standing wind hub, growing solar base"},
+  "Karnataka":{total:null, solar:11.35, wind:1.379, note:"#2 in FY26 wind additions (1,379 MW)"},
+  "Andhra Pradesh":{total:null, solar:null, wind:null, note:"Among top 5 states by combined solar+wind share (83.7% held by top 5 states)"},
+  "Madhya Pradesh":{total:null, solar:null, wind:null, note:"Large-scale solar park development (Rewa, etc.)"},
+};
+const stateSelect = document.getElementById('stateSelect');
+Object.keys(stateData).forEach(s=>{
+  const o=document.createElement('option'); o.value=s; o.textContent=s; stateSelect.appendChild(o);
+});
+stateSelect.addEventListener('change', ()=>{
+  const d = stateData[stateSelect.value];
+  const box = document.getElementById('stateDetail');
+  const note = document.getElementById('stateSourceNote');
+  if(!d){ box.classList.remove('show'); note.textContent=''; return; }
+  note.textContent = 'MNRE state-wise table, 31 May 2026 · JMK Research FY26 report';
+  box.innerHTML = `
+    <div class="card-title">${stateSelect.value}</div>
+    <div class="card-desc">${d.note}</div>
+    <div class="rd-grid">
+      <div class="rd-stat"><div class="l">Overall RE capacity</div><div class="v">${d.total? d.total+' GW':'see MNRE table'}</div></div>
+      <div class="rd-stat"><div class="l">Solar capacity</div><div class="v">${d.solar? d.solar+' GW':'—'}</div></div>
+      <div class="rd-stat"><div class="l">FY26 wind additions</div><div class="v">${d.wind? d.wind+' GW':'—'}</div></div>
+      <div class="rd-stat"><div class="l">Full official table</div><div class="v" style="font-size:12px;"><a href="https://mnre.gov.in/en/physical-progress/" target="_blank" rel="noopener" style="color:var(--wind);">MNRE ↗</a></div></div>
+    </div>`;
+  box.classList.add('show');
+});
+
+const stateRanks = [
+  ["Gujarat",49.1,"#ffb703"],["Rajasthan",41.7,"#ffb703"],["Maharashtra",20.28,"#2dd4d4"],
+  ["Tamil Nadu",13.91,"#4d8dff"],["Karnataka",11.35,"#b98af0"]
+];
+const maxState = Math.max(...stateRanks.map(r=>r[1]));
+// Added scope attributes for better accessibility
+document.getElementById('stateRankTable').innerHTML = `
+  <tr><th scope="col">State</th><th scope="col">Approx. Capacity</th><th scope="col" style="width:40%">Share</th></tr>
+  ${stateRanks.map(([name,val,color])=>`
+    <tr><td>${name}</td><td class="num">${val} GW</td>
+    <td><div class="bar-bg"><div class="bar-fg" style="width:${(val/maxState*100).toFixed(0)}%; background:${color}"></div></div></td></tr>
+  `).join('')}`;
+
+// ============ COUNTRY DATA (International) ============
+const countryData = {
+  "China":{total:2258, note:"Holds ~45% of global RE capacity; world leader in solar, wind (342 GW) and hydro (340+ GW)"},
+  "United States":{total:467.92, note:"2nd globally; driven by utility-scale solar and wind buildout"},
+  "India":{total:288.58, note:"3rd globally; overtook Brazil in IRENA's Dec-2025 ranking"},
+  "Brazil":{total:228.2, note:"Hydropower-dominant grid; 2nd largest hydro fleet globally (~112 GW)"},
+  "Germany":{total:199.92, note:"High renewable penetration relative to grid size; strong rooftop solar"},
+  "Japan":{total:134.53, note:"Solar-heavy mix; limited land drives rooftop & floating solar"},
+  "Canada":{total:110.51, note:"Large hydropower base plus growing wind capacity"},
+  "Spain":{total:98.61, note:"Fast-growing solar and onshore wind capacity"},
+  "France":{total:83.63, note:"Diversified mix; growing offshore wind pipeline"},
+  "Italy":{total:78.28, note:"Strong solar growth, especially distributed/rooftop"},
+};
+const countrySelect = document.getElementById('countrySelect');
+Object.keys(countryData).forEach(c=>{
+  const o=document.createElement('option'); o.value=c; o.textContent=c; countrySelect.appendChild(o);
+});
+countrySelect.addEventListener('change', ()=>{
+  const d = countryData[countrySelect.value];
+  const box = document.getElementById('countryDetail');
+  const note = document.getElementById('countrySourceNote');
+  if(!d){ box.classList.remove('show'); note.textContent=''; return; }
+  note.textContent = 'Statista / IRENA, Mar 2026';
+  box.innerHTML = `
+    <div class="card-title">${countrySelect.value}</div>
+    <div class="card-desc">${d.note}</div>
+    <div class="rd-grid">
+      <div class="rd-stat"><div class="l">Total RE capacity</div><div class="v">${d.total} GW</div></div>
+      <div class="rd-stat"><div class="l">Global rank</div><div class="v">#${Object.keys(countryData).indexOf(countrySelect.value)+1}</div></div>
+      <div class="rd-stat"><div class="l">IRENA source</div><div class="v" style="font-size:12px;"><a href="https://www.irena.org/Publications" target="_blank" rel="noopener" style="color:var(--wind);">IRENA ↗</a></div></div>
+      <div class="rd-stat"><div class="l">IEA context</div><div class="v" style="font-size:12px;"><a href="https://www.iea.org/countries" target="_blank" rel="noopener" style="color:var(--wind);">IEA ↗</a></div></div>
+    </div>`;
+  box.classList.add('show');
+});
+
+const countryRanks = Object.entries(countryData).map(([k,v])=>[k,v.total]);
+const maxCountry = Math.max(...countryRanks.map(r=>r[1]));
+// Added scope attributes for accessibility in country table
+document.getElementById('countryRankTable').innerHTML = `
+  <tr><th scope="col">Country</th><th scope="col">Total Capacity</th><th scope="col" style="width:40%">Share</th></tr>
+  ${countryRanks.map(([name,val],i=>`
+    <tr><td>${name}</td><td class="num">${val} GW</td>
+    <td><div class="bar-bg"><div class="bar-fg" style="width:${(val/maxCountry*100).toFixed(0)}%; background:${['#ffb703','#2dd4d4','#4d8dff','#b98af0','#7cc142'][i%5]}"></div></div></td></tr>
+  `).join('')}`;
+
+// ============ LIVE NEWS (client-side RSS fetch) ============
+const feeds = {
+  india:[
+    {name:"MNRE (PIB Press Releases)", site:"https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=0&ministry=53", rss:"https://www.pib.gov.in/RssMain.aspx?ModId=6&Mid=53", color:"var(--solar)"},
+    {name:"SolarQuarter", site:"https://solarquarter.com", rss:"https://solarquarter.com/feed/", color:"var(--wind)"},
+    {name:"Mercom India", site:"https://www.mercomindia.com", rss:"https://www.mercomindia.com/feed", color:"var(--hydro)"},
+    {name:"ETEnergyworld — Renewable", site:"https://energy.economictimes.indiatimes.com/renewable", rss:"https://energy.economictimes.indiatimes.com/rss/renewable", color:"var(--hydrogen)"},
+  ],
+  intl:[
+    {name:"IRENA News", site:"https://www.irena.org/News", rss:"https://www.irena.org/rss/newsroom", color:"var(--solar)"},
+    {name:"pv magazine (Global)", site:"https://www.pv-magazine.com", rss:"https://www.pv-magazine.com/feed/", color:"var(--wind)"},
+    {name:"Renewables Now", site:"https://renewablesnow.com", rss:"https://renewablesnow.com/feed/", color:"var(--hydro)"},
+    {name:"Windpower Monthly", site:"https://www.windpowermonthly.com", rss:"https://www.windpowermonthly.com/rss/news", color:"var(--hydrogen)"},
+  ]
+};
+
+function newsCardShell(f, gridId, idx){
+  const div = document.createElement('div');
+  div.className = 'news-src';
+  div.id = gridId+'_'+idx;
+  div.innerHTML = `
+    <div class="news-src-head">
+      <div class="news-src-name"><span style="width:8px;height:8px;border-radius:50%;background:${f.color};display:inline-block;margin-right:8px;"></span>${f.name}</div>
+      <div class="news-status" id="${gridId}_${idx}_status" aria-live="polite">loading…</div>
+    </div>
+    <div class="news-items" id="${gridId}_${idx}_items"><div class="news-loading">Fetching latest headlines…</div></div>
+    <a class="visit-link" href="${f.site}" target="_blank" rel="noopener">Visit ${f.name} ↗</a>
+  `;
+  return div;
+}
+
+// Improved feed fetch with optional rss2json API key (leave blank client-side for security)
+const RSS2JSON_API_KEY = ''; // For production, fetch feeds server-side (recommended). Do NOT commit a private API key here.
+
+function fetchFeed(f, gridId, idx){
+  const statusEl = document.getElementById(`${gridId}_${idx}_status`);
+  const itemsEl = document.getElementById(`${gridId}_${idx}_items`);
+  let api = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(f.rss);
+  if(RSS2JSON_API_KEY) api += '&api_key=' + encodeURIComponent(RSS2JSON_API_KEY);
+  fetch(api, {cache: "no-cache", mode: "cors"})
+    .then(r=>{
+      if(!r.ok) throw new Error('Network response not ok');
+      return r.json();
+    })
+    .then(data=>{
+      if(data.status === 'ok' && Array.isArray(data.items) && data.items.length){
+        statusEl.textContent = 'live';
+        statusEl.style.color = '#4ade80';
+        itemsEl.innerHTML = data.items.slice(0,4).map(it=>{
+          const d = it.pubDate ? new Date(it.pubDate).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '';
+          return `<div class="news-item"><a href="${it.link}" target="_blank" rel="noopener">${it.title}</a><span class="date">${d}</span></div>`;
+        }).join('');
+      } else {
+        throw new Error('empty feed');
+      }
+    })
+    .catch((err)=>{
+      statusEl.textContent = 'unavailable';
+      statusEl.style.color = 'var(--text-faint)';
+      itemsEl.innerHTML = `<div class="news-loading">Live feed didn't load in this browser session — open the source site to read latest headlines.</div>`;
+      console.warn('RSS fetch failed for', f.rss, err);
+    });
+}
+
+function renderFeeds(list, gridId){
+  const grid = document.getElementById(gridId);
+  list.forEach((f, idx)=>{
+    grid.appendChild(newsCardShell(f, gridId, idx));
+    fetchFeed(f, gridId, idx);
+  });
+}
+
+renderFeeds(feeds.india, 'newsGridIndia');
+renderFeeds(feeds.intl, 'newsGridIntl');
+
+// ============ Accessible tabs and keyboard handling (region + news tabs)
+(function(){
+  const tabs = Array.from(document.querySelectorAll('.rtab'));
+  const newsTabs = Array.from(document.querySelectorAll('.ntab'));
+
+  function activateRegionTab(tab){
+    tabs.forEach(t=>{
+      const active = t === tab;
+      t.classList.toggle('active', active);
+      t.setAttribute('aria-selected', active ? 'true' : 'false');
+      t.tabIndex = active ? 0 : -1;
+    });
+    const r = tab.dataset.region;
+    document.getElementById('panel-india').style.display = r==='india' ? '' : 'none';
+    document.getElementById('panel-intl').style.display = r==='intl' ? '' : 'none';
+    // sync news tabs visually
+    newsTabs.forEach(t=>t.classList.remove('active'));
+    const nt = document.querySelector(`.ntab[data-newsregion="${r}"]`);
+    if(nt) nt.classList.add('active');
+    document.getElementById('newsGridIndia').style.display = r==='india' ? '' : 'none';
+    document.getElementById('newsGridIntl').style.display = r==='intl' ? '' : 'none';
+  }
+
+  tabs.forEach((tab, idx)=>{
+    tab.addEventListener('click', ()=> activateRegionTab(tab));
+    tab.addEventListener('keydown', (e)=>{
+      if(e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'Home' || e.key === 'End'){
+        e.preventDefault();
+        let newIdx = idx;
+        if(e.key === 'ArrowRight') newIdx = (idx + 1) % tabs.length;
+        if(e.key === 'ArrowLeft') newIdx = (idx - 1 + tabs.length) % tabs.length;
+        if(e.key === 'Home') newIdx = 0;
+        if(e.key === 'End') newIdx = tabs.length - 1;
+        tabs[newIdx].focus();
+        activateRegionTab(tabs[newIdx]);
+      }
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        activateRegionTab(tab);
+      }
+    });
+  });
+
+  // News-region tabs: keyboard friendly
+  newsTabs.forEach((nt, idx)=>{
+    nt.setAttribute('role','tab');
+    nt.tabIndex = nt.classList.contains('active') ? 0 : -1;
+    nt.addEventListener('click', ()=> {
+      document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+      nt.classList.add('active');
+      const r=nt.dataset.newsregion;
+      document.getElementById('newsGridIndia').style.display = r==='india' ? '' : 'none';
+      document.getElementById('newsGridIntl').style.display = r==='intl' ? '' : 'none';
+      // keep region tabs in sync
+      const regionTab = document.querySelector(`.rtab[data-region="${r}"]`);
+      if(regionTab) activateRegionTab(regionTab);
+    });
+    nt.addEventListener('keydown', (e)=> {
+      if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nt.click(); }
+      if(e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+        e.preventDefault();
+        const nextIdx = e.key === 'ArrowRight' ? (idx+1)%newsTabs.length : (idx-1+newsTabs.length)%newsTabs.length;
+        newsTabs[nextIdx].focus();
+      }
+    });
+  });
+
+})();
+</script>
+</body>
+</html>
